@@ -35,7 +35,13 @@
                         $main.find('#anagram').focus();
                         $($main.find('#anagram-form')).submit(function(){
                             $main.find('#results').children().remove();
-                            var words = dictionary.findMatches($main.find('#anagram').val());
+                            var text = $main.find('#anagram').val()
+                            if($('#wildcard').is(':checked')) {
+                                var words = new App.WildcardSearch(text).invoke(dictionary);
+                            }
+                            else {
+                                var words = dictionary.findMatches();
+                            }
                             var $list = $('<ul style="list-style:none"/>');
                             for(var i = 0; i < words.length; i++) {
                                 $list.append($('<li>' + words[i] + '</li>'));
@@ -69,6 +75,10 @@
                 <input class="span2" id="anagram" type="text" placeholder="anagram">
                 <button class="btn" type="submit">Solve!</button>
             </div>
+            <label for="wildcard">
+                <input type="checkbox" id="wildcard" />
+                wildcard
+            </label>
         </form>
         <div id="results" />
     </div>
