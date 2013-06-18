@@ -116,14 +116,15 @@
         }
     };
 
+
     var WildcardSearch = function(term) {
         var _this = this;
         this.cmds = [];
-        _.each(term.split(), function(letter, i){
+        _.each(term.toLowerCase().split(''), function(letter, i){
             var last = i == term.length - 1;
             if(letter === '*') {
                 _this.cmds.push(function(node, results){
-                    _.each(_.key(node.children), function(key){
+                    _.each(_.keys(node.children), function(key){
                         var current = node.children[key];
                         results.stack.unshift(results.stack[0].slice(0));
                         results.stack[0].push(key);

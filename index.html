@@ -1,87 +1,99 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Anagram Solver</title>
-    <link href="css/bootstrap.css" rel="stylesheet" />
-    <script type="text/javascript" src="js/underscore-min.js"></script>
-    <script type="text/javascript" src="js/jquery.js"></script>
-    <script type="text/javascript" src="js/anagram-solver.js"></script>
-    <script type="text/javascript">
-        $(document).ready(function(){
-            var $main = $('div#main');
-            $main.append($(
-                    "<div id='msg'>loading dictionary</div>"
-                            + "<div class='progress'>"
-                            + '<div class="bar" style="width: 10%;"></div>'
-                            + "</div>"
-            ));
+    <head>
+        <title>Anagram Solver</title>
+        <link href="css/bootstrap.css" rel="stylesheet" />
+        <script type="text/javascript" src="js/underscore-min.js"></script>
+        <script type="text/javascript" src="js/jquery.js"></script>
+        <script type="text/javascript" src="js/anagram-solver.js"></script>
+        <script type="text/javascript">
+            $(document).ready(function(){
+                var $main = $('div#main');
+                $main.append($(
+                        "<div id='msg'>loading dictionary</div>"
+                                + "<div class='progress'>"
+                                + '<div class="bar" style="width: 10%;"></div>'
+                                + "</div>"
+                ));
 
-            var populator = new App.DictionaryLoader(new App.Dictionary(), {
-                progress: function(p) {
-                    $main.find('div.bar').css('width', p + '%');
-                },
-                error: function() {
-                    $main.children().remove();
-                    $main.append($('<h1>error loading dictionary :-(</h1>'));
-                    if(window.location.protocol == "file:") {
-                        $main.append($('<sub>if you\'re running chrome, try adding this argument: --allow-file-access-from-files</sub>'))
-                    }
-                },
-                complete: function(){
-                    setTimeout(function() {
-                        var dictionary = populator.dictionary;
+                var populator = new App.DictionaryLoader(new App.Dictionary(), {
+                    progress: function(p) {
+                        $main.find('div.bar').css('width', p + '%');
+                    },
+                    error: function() {
                         $main.children().remove();
-                        $main.append($('#anagram-form-template').html());
-                        $main.find('#anagram').focus();
-                        $($main.find('#anagram-form')).submit(function(){
-                            $main.find('#results').children().remove();
-                            var text = $main.find('#anagram').val()
-                            if($('#wildcard').is(':checked')) {
-                                var words = new App.WildcardSearch(text).invoke(dictionary);
-                            }
-                            else {
-                                var words = dictionary.findMatches();
-                            }
-                            var $list = $('<ul style="list-style:none"/>');
-                            for(var i = 0; i < words.length; i++) {
-                                $list.append($('<li>' + words[i] + '</li>'));
-                            }
-                            $main.find('#results').append($list);
-                        });
-                    }, 1000);
+                        $main.append($('<h1>error loading dictionary :-(</h1>'));
+                        if(window.location.protocol == "file:") {
+                            $main.append($('<sub>if you\'re running chrome, try adding this argument: --allow-file-access-from-files</sub>'))
+                        }
+                    },
+                    complete: function(){
+                        setTimeout(function() {
+                            var dictionary = populator.dictionary;
+                            $main.children().remove();
+                            $main.append($('#anagram-form-template').html());
+                            $main.find('#anagram').focus();
+                            $($main.find('#anagram-form')).submit(function(){
+                                $main.find('#results').children().remove();
+                                var val = $main.find('#anagram').val();
+                                if($('#wildcard').is(':checked')) {
+                                    var words = new App.WildcardSearch(val).invoke(dictionary);
+                                }
+                                else {
+                                    var words = dictionary.findMatches(val);
+                                }
+                                var $list = $('<ul style="list-style:none"/>');
+                                for(var i = 0; i < words.length; i++) {
+                                    $list.append($('<li>' + words[i] + '</li>'));
+                                }
+                                $main.find('#results').append($list);
+                            });
+                            $('#wildcard').change(function(){
+                                if($(this).is(':checked')) {
+                                    $('h1').text('solve crossword');
+                                    $('#anagram').attr('placeholder', 'wildcard search');
+                                }
+                                else {
+                                    $('h1').text('solve anagram');
+                                    $('#anagram').attr('placeholder', 'anagram');
+                                }
+                            })
+                        }, 1000);
 
-                }
+                    }
+                });
+                populator.populate('./resource/words.txt');
             });
-            populator.populate('./resource/words.txt');
-        });
-    </script>
-    <style type="text/css">
-        div#main {
-            margin: 10em;
-        }
-        div#form-container {
-            margin-left: 10em;
-        }
-    </style>
+        </script>
+        <style type="text/css">
+            div#main {
+                margin: 10em;
+            }
+            div#form-container {
+                margin-left: 10em;
+            }
+        </style>
 
-</head>
-<body>
-<div class="container" id="main"></div>
-<script id="anagram-form-template" type="text/template">
-    <div id="form-container">
-        <h1>solve anagram</h1>
-        <form action="javascript:void" id="anagram-form">
-            <div class="input-append">
-                <input class="span2" id="anagram" type="text" placeholder="anagram">
-                <button class="btn" type="submit">Solve!</button>
-            </div>
-            <label for="wildcard">
-                <input type="checkbox" id="wildcard" />
-                wildcard
-            </label>
-        </form>
-        <div id="results" />
-    </div>
-</script>
-</body>
+    </head>
+    <body>
+    <div class="container" id="main"></div>
+    <script id="anagram-form-template" type="text/template">
+        <div id="form-container">
+            <h1>solve anagram</h1>
+            <form action="javascript:void(0)" id="anagram-form">
+                <div class="input-append">
+                    <input class="span2" id="anagram" type="text" placeholder="anagram">
+                    <button class="btn" type="submit">Solve!</button>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" id="wildcard"/>
+                        crossword solver
+                    </label>
+                </div>
+            </form>
+            <div id="results" />
+        </div>
+    </script>
+    </body>
 </html>
