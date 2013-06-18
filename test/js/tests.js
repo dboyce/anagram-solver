@@ -88,3 +88,27 @@ test("test pass matched sequence", function() {
     equal(0, this.results.current.length);
 
 });
+
+module("wildcard search", {
+    setup: function() {
+        var _this = this;
+        this.dictionary = new App.Dictionary();
+        _.each(["foo", "bar", "baz"], function(word){
+            _this.dictionary.addWord(word);
+        });
+    }
+});
+
+test("test find simple string", function(){
+    var results = new App.WildcardSearch("foo").invoke(this.dictionary);
+    equal(1, results.length);
+    equal('foo', results[0]);
+});
+
+test("test find wildcard string", function(){
+    var results = new App.WildcardSearch("ba*").invoke(this.dictionary);
+    equal(2, results.length);
+    equal('bar', results[0]);
+    equal('baz', results[1]);
+
+});

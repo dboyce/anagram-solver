@@ -116,11 +116,63 @@
         }
     };
 
+
+    var WildcardSearch = function(term) {
+        var _this = this;
+        this.cmds = [];
+        _.each(term.toLowerCase().split(''), function(letter, i){
+            var last = i == term.length - 1;
+            if(letter === '*') {
+                _this.cmds.push(function(node, results){
+                    _.each(_.keys(node.children), function(key){
+                        var current = node.children[key];
+                        results.stack.unshift(results.stack[0].slice(0));
+                        results.stack[0].push(key);
+                        if(last) {
+                            if(current.word) {
+                                results.matches.push(results.stack[0].join(''));
+                            }
+                        }
+                        else {
+                            _this.cmds[i + 1](current, results);
+                        }
+                        results.stack.shift();
+                    });
+                });
+            }
+            else {
+                _this.cmds.push(function(node, results){
+                    if(node.children[letter] !== undefined) {
+                        results.stack[0].push(letter);
+                        if(last) {
+                            if(node.children[letter].word) {
+                                results.matches.push(results.stack[0].join(''));
+                            }
+                        }
+                        else {
+                            _this.cmds[i+1](node.children[letter], results);
+                        }
+                    }
+                });
+            }
+        });
+
+    };
+
+    WildcardSearch.prototype = {
+        invoke: function(dictionary){
+            var results = {stack:[[]], matches: []};
+            this.cmds[0](dictionary.rootNode, results);
+            return results.matches;
+        }
+    };
+
     exports.App = {
         Node: Node,
         Dictionary: Dictionary,
         DictionaryLoader: DictionaryLoader,
-        DictionaryParser: DictionaryParser
+        DictionaryParser: DictionaryParser,
+        WildcardSearch: WildcardSearch
     }
 })(window);
 

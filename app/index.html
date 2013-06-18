@@ -35,13 +35,29 @@
                             $main.find('#anagram').focus();
                             $($main.find('#anagram-form')).submit(function(){
                                 $main.find('#results').children().remove();
-                                var words = dictionary.findMatches($main.find('#anagram').val());
+                                var val = $main.find('#anagram').val();
+                                if($('#wildcard').is(':checked')) {
+                                    var words = new App.WildcardSearch(val).invoke(dictionary);
+                                }
+                                else {
+                                    var words = dictionary.findMatches(val);
+                                }
                                 var $list = $('<ul style="list-style:none"/>');
                                 for(var i = 0; i < words.length; i++) {
                                     $list.append($('<li>' + words[i] + '</li>'));
                                 }
                                 $main.find('#results').append($list);
                             });
+                            $('#wildcard').change(function(){
+                                if($(this).is(':checked')) {
+                                    $('h1').text('solve crossword');
+                                    $('#anagram').attr('placeholder', 'wildcard search');
+                                }
+                                else {
+                                    $('h1').text('solve anagram');
+                                    $('#anagram').attr('placeholder', 'anagram');
+                                }
+                            })
                         }, 1000);
 
                     }
@@ -64,10 +80,16 @@
     <script id="anagram-form-template" type="text/template">
         <div id="form-container">
             <h1>solve anagram</h1>
-            <form action="javascript:void" id="anagram-form">
+            <form action="javascript:void(0)" id="anagram-form">
                 <div class="input-append">
                     <input class="span2" id="anagram" type="text" placeholder="anagram">
                     <button class="btn" type="submit">Solve!</button>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" id="wildcard"/>
+                        crossword solver
+                    </label>
                 </div>
             </form>
             <div id="results" />
